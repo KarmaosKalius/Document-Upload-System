@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using DocumentSystemApi.Data;
+using DocumentSystemApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+builder.Services.AddScoped<FileServicesUserMade>();
 var app = builder.Build();
 
 
