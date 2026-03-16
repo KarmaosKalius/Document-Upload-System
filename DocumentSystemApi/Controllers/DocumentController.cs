@@ -3,6 +3,8 @@ using DocumentSystemApi.Data;
 using DocumentSystemApi.DTOs;
 using DocumentSystemApi.Models;
 using DocumentSystemApi.Services;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace DocumentSystemApi.Controllers;
 [ApiController]
@@ -39,5 +41,34 @@ public class DocumentController : ControllerBase
             message = "File uploaded successfully",
             documentId = document.Id
         });
+    }
+    [HttpGet("list")]
+    public async Task<IActionResult> GetDocumentsUserMade()
+    {
+        var documents = await _context.Documents.Select(d => new
+        {
+            d.Id,
+            d.FileName,
+            d.ContentType,
+            d.Size,
+            d.UploadDate
+        }).ToListAsync();
+        return Ok(documents);
+    }
+    [HttpGet("download/{id}")]
+    public async Task<IActionResult> DownloadDocumentUserMade(int id)
+    {
+        var document = await _context.Documents.FindAsync(id);
+        if(document == null)
+        {
+            return NotFound("Document Not Found");
+        }
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(),"Storage","Uploads", document.StoredFileName);
+        if (!System.IO.File.Exists(filePath))
+        {
+            return NotFound("File not found on server");
+        }
+        var filesBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+        return File(filesBytes,document.ContentType, document.FileName);
     }
 }
