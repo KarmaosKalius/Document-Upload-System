@@ -1,17 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using DocumentSystemApi.Data;
 using DocumentSystemApi.Services;
+using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddCors(options =>{
+    options.AddPolicy("AllowReact",
+    policy =>{
+        policy.WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 builder.Services.AddScoped<FileServicesUserMade>();
 var app = builder.Build();
 
 
 app.UseHttpsRedirection();
 app.MapControllers();
+app.UseCors("AllowReact");
 app.Run();
 
 

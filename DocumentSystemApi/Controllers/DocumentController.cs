@@ -71,4 +71,20 @@ public class DocumentController : ControllerBase
         var filesBytes = await System.IO.File.ReadAllBytesAsync(filePath);
         return File(filesBytes,document.ContentType, document.FileName);
     }
+    [HttpGet("view/{id}")]
+    public async Task<IActionResult> ViewDocumentUserMade(int id)
+    {
+        var document = await _context.Documents.FindAsync(id);
+        if(document == null)
+        {
+            return NotFound("Document not found ");
+        }
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(),"Storage", "Uploads", document.StoredFileName);
+        if (!System.IO.File.Exists(filePath))
+        {
+            return NotFound("File not found on the server");
+        }
+        var fileStream = new FileStream(filePath,FileMode.Open, FileAccess.Read);
+        return File(fileStream,document.ContentType);
+    }
 }
